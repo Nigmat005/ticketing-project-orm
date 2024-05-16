@@ -3,13 +3,16 @@ package com.cydeo.controller;
 import com.cydeo.dto.UserDTO;
 import com.cydeo.service.RoleService;
 import com.cydeo.service.UserService;
+import jdk.jfr.Threshold;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-
+//@Transactional
 @Controller
 @RequestMapping("/user")
 public class UserController {
@@ -80,10 +83,10 @@ public class UserController {
 
     }
 
-//    @GetMapping("/delete/{username}")
-//    public String deleteUser(@PathVariable("username") String username) {
-//        userService.deleteById(username);
-//        return "redirect:/user/create";
-//    }
+    @GetMapping("/delete/{username}")
+    public String deleteUser(@PathVariable("username") String username) {
+        userService.deleteByUserName(username);
+        return "redirect:/user/create";
+    }
 
 }
