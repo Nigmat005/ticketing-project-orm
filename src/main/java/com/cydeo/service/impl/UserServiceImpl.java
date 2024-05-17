@@ -8,7 +8,9 @@ import com.cydeo.service.UserService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,7 +41,16 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<UserDTO> listAllUsers() {
-       return userRepository.findAll(Sort.by("firstName")).stream().map(userMapper::convertToUserDTO).collect(Collectors.toList());
+     // Select only not deleted user to show "Select * from USERS where is_deleted=false"
+//       return userRepository.findAll(Sort.by("firstName")).stream().filter(eachUserEntity-> !eachUserEntity.getIsDeleted())
+//        .map(userMapper::convertToUserDTO).collect(Collectors.toList());
+
+        // After adding @Where on top of User Entity class, it will auto concat with Query
+        // e.g. in  UserRepository interface method 'User findByUserNameLike(String userName)' will
+        // help us return User Entity by doing "SELECT * FROM USERS". However, after adding the @Where(clause="is_delete=false")
+        // it will run like   "SELECT * FROM USERS WHERE is_delete=false"
+        return userRepository.findAll(Sort.by("firstName")).stream()
+                .map(userMapper::convertToUserDTO).collect(Collectors.toList());
     }
     @Override
     public UserDTO findByUserName(String username) {
@@ -77,7 +88,16 @@ public class UserServiceImpl implements UserService {
 //    }
 
     @Override
-    public void deleteByUserName(String username) {
-     userRepository.deleteUserByUserName(username);
+    public void delete(String username) {
+        // Will not delete User from User table, instead make is_Delete=true, and save, then listAllUsers will fetch Users whose is_delete=false, making deleted user not visible from view.
+        User user= userRepository.findByUserNameLike(username);
+        user.setIsDeleted(true);
+        userRepository.save(user);
+    }
+
+    @Override
+    public void deepDelete(String userName) {
+        // will delete user from db
+        userRepository.deleteUserByUserName(userName);
     }
 }
