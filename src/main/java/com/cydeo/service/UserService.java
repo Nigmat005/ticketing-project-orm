@@ -14,6 +14,7 @@ public interface UserService{
     UserDTO update(UserDTO dto);
     void delete(String username);
     void deepDelete(String userName);
+    List<UserDTO> listAllManagers();
 
 
 

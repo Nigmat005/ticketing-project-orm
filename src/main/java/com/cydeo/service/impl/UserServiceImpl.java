@@ -54,7 +54,7 @@ public class UserServiceImpl implements UserService {
     }
     @Override
     public UserDTO findByUserName(String username) {
-        return userMapper.convertToUserDTO(userRepository.findByUserNameLike(username));
+        return userMapper.convertToUserDTO(userRepository.findByUserName(username));
     }
 
     @Override
@@ -65,7 +65,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDTO update(UserDTO dto) {
         // find current user
-        User user=userRepository.findByUserNameLike(dto.getUserName());
+        User user=userRepository.findByUserName(dto.getUserName());
 
         User userWithNoID=userMapper.convertToEntity(dto);
         userWithNoID.setId(user.getId());
@@ -90,7 +90,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public void delete(String username) {
         // Will not delete User from User table, instead make is_Delete=true, and save, then listAllUsers will fetch Users whose is_delete=false, making deleted user not visible from view.
-        User user= userRepository.findByUserNameLike(username);
+        User user= userRepository.findByUserName(username);
         user.setIsDeleted(true);
         userRepository.save(user);
     }
@@ -99,5 +99,13 @@ public class UserServiceImpl implements UserService {
     public void deepDelete(String userName) {
         // will delete user from db
         userRepository.deleteUserByUserName(userName);
+    }
+
+    @Override
+    public List<UserDTO> listAllManagers() {
+        // get entity
+        List<User> user=userRepository.fetchManagers();
+        // convert to DTO
+        return user.stream().map(userMapper::convertToUserDTO).collect(Collectors.toList());
     }
 }

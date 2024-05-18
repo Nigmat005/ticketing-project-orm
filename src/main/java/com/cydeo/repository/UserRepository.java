@@ -8,10 +8,12 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Repository
 public interface UserRepository extends JpaRepository<User,Long> {
     // derived query
-    User findByUserNameLike(String userName);
+//    User findByUserNameLike(String userName);
 
 
 
@@ -27,4 +29,8 @@ public interface UserRepository extends JpaRepository<User,Long> {
     @Transactional
     @Modifying
     void deleteUserByUserName(String userName);
+
+    // fetch all managers
+    @Query("Select user from User user where user.role.description ='Manager'")
+    List<User> fetchManagers();
 }
