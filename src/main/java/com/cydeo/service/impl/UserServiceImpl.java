@@ -101,11 +101,18 @@ public class UserServiceImpl implements UserService {
         userRepository.deleteUserByUserName(userName);
     }
 
+//    @Override
+//    public List<UserDTO> listAllManagers() {
+//        // get entity
+//        List<User> user=userRepository.fetchManagers();
+//        // convert to DTO
+//        return user.stream().map(userMapper::convertToUserDTO).collect(Collectors.toList());
+//    }
+
     @Override
-    public List<UserDTO> listAllManagers() {
-        // get entity
-        List<User> user=userRepository.fetchManagers();
-        // convert to DTO
-        return user.stream().map(userMapper::convertToUserDTO).collect(Collectors.toList());
+    public List<UserDTO> listAllByRole(String description) {
+        List<User> users = userRepository.findAllByRoleDescriptionIgnoreCase(description);
+
+        return users.stream().map(userMapper::convertToUserDTO).collect(Collectors.toList());
     }
 }

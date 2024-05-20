@@ -18,13 +18,12 @@ public class ProjectServiceImpl implements ProjectService {
 
     private final ProjectRepository projectRepository;
     private final ProjectMapper projectMapper;
-    private final UserRepository userRepository;
+
 
     @Autowired
-    public ProjectServiceImpl(ProjectRepository projectRepository, ProjectMapper projectMapper, UserRepository userRepository){
+    public ProjectServiceImpl(ProjectRepository projectRepository, ProjectMapper projectMapper){
         this.projectRepository=projectRepository;
         this.projectMapper = projectMapper;
-        this.userRepository = userRepository;
     }
 
     @Override
@@ -34,9 +33,9 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     public void save(ProjectDTO projectDTO) {
-        if(projectDTO.getProjectStatus()==null){
-            projectDTO.setProjectStatus(Status.OPEN);
-        }
+
+        projectDTO.setProjectStatus(Status.OPEN);
+
         projectRepository.save(projectMapper.convertToEntity(projectDTO));
     }
 
@@ -48,7 +47,25 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
+    public void update(ProjectDTO projectDTO) {
+        // since id of dto object is null we need to get id from entity
+        Project project =projectRepository.findByProjectCode(projectDTO.getProjectName());
+
+        // set id of entity from db to DTO project
+        Project projectWithId=projectMapper.convertToEntity(projectDTO);
+        projectWithId.setId(project.getId());
+        projectRepository.save(projectWithId);
+    }
+
+    @Override
     public ProjectDTO findByProjectCode(String projectCode) {
         return  projectMapper.convertToDto(projectRepository.findByProjectCode(projectCode));
+    }
+
+    @Override
+    public void complete(String projectCode) {
+        Project project=projectRepository.findByProjectCode(projectCode);
+        project.setProjectStatus(Status.COMPLETE);
+        projectRepository.save(project);
     }
 }

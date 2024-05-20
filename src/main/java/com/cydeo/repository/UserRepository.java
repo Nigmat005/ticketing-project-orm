@@ -33,4 +33,6 @@ public interface UserRepository extends JpaRepository<User,Long> {
     // fetch all managers
     @Query("Select user from User user where user.role.description ='Manager'")
     List<User> fetchManagers();
+
+    List<User> findAllByRoleDescriptionIgnoreCase(String roleDescription);
 }

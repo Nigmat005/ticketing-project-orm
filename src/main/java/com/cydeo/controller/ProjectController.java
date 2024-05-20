@@ -31,8 +31,7 @@ public class ProjectController {
 
         model.addAttribute("project", new ProjectDTO());
         model.addAttribute("projects", projectService.listAllProjects());
-        model.addAttribute("managers", userService.listAllManagers());
-
+        model.addAttribute("managers", userService.listAllByRole("Manager"));
         return "/project/create";
 
     }
@@ -43,8 +42,8 @@ public class ProjectController {
         if (bindingResult.hasErrors()) {
 
             model.addAttribute("projects", projectService.listAllProjects());
-            model.addAttribute("managers", userService.listAllManagers());
-
+//            model.addAttribute("managers", userService.listAllManagers());
+            model.addAttribute("managers", userService.listAllByRole("Manager"));
             return "/project/create";
 
         }
@@ -53,46 +52,47 @@ public class ProjectController {
         return "redirect:/project/create";
 
     }
+    @GetMapping("/update/{projectCode}")
+    public String editProject(@PathVariable("projectCode") String projectCode, Model model) {
 
+        model.addAttribute("project", projectService.findByProjectCode(projectCode));
+        model.addAttribute("projects", projectService.listAllProjects());
+//        model.addAttribute("managers", userService.listAllManagers());
+        model.addAttribute("managers", userService.listAllByRole("Manager"));
+
+        return "/project/update";
+
+    }
+
+    @PostMapping("/update")
+    public String updateProject(@Valid @ModelAttribute("project") ProjectDTO project, BindingResult bindingResult, Model model) {
+
+        if (bindingResult.hasErrors()) {
+
+            model.addAttribute("projects", projectService.listAllProjects());
+            model.addAttribute("managers",userService.listAllByRole("Manager"));
+
+            return "/project/update";
+
+        }
+
+        projectService.update(project);
+        return "redirect:/project/create";
+
+    }
     @GetMapping("/delete/{projectCode}")
     public String deleteProject(@PathVariable("projectCode") String projectCode) {
         projectService.delete(projectCode);
         return "redirect:/project/create";
     }
 
-//    @GetMapping("/complete/{projectcode}")
-//    public String completeProject(@PathVariable("projectcode") String projectcode) {
-//        projectService.complete(projectService.findById(projectcode));
-//        return "redirect:/project/create";
-//    }
-//
-//    @GetMapping("/update/{projectcode}")
-//    public String editProject(@PathVariable("projectcode") String projectcode, Model model) {
-//
-//        model.addAttribute("project", projectService.findById(projectcode));
-//        model.addAttribute("projects", projectService.findAll());
-//        model.addAttribute("managers", userService.findManagers());
-//
-//        return "/project/update";
-//
-//    }
-//
-//    @PostMapping("/update")
-//    public String updateProject(@Valid @ModelAttribute("project") ProjectDTO project, BindingResult bindingResult, Model model) {
-//
-//        if (bindingResult.hasErrors()) {
-//
-//            model.addAttribute("projects", projectService.findAll());
-//            model.addAttribute("managers", userService.findManagers());
-//
-//            return "/project/update";
-//
-//        }
-//
-//        projectService.update(project);
-//        return "redirect:/project/create";
-//
-//    }
+    @GetMapping("/complete/{projectCode}")
+    public String completeProject(@PathVariable("projectCode") String projectCode) {
+        projectService.complete(projectCode);
+        return "redirect:/project/create";
+    }
+
+
 //
 //    @GetMapping("/manager/project-status")
 //    public String getProjectByManager(Model model) {
