@@ -5,114 +5,76 @@ import com.cydeo.entity.User;
 import com.cydeo.mapper.UserMapper;
 import com.cydeo.repository.UserRepository;
 import com.cydeo.service.UserService;
-import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
 public class UserServiceImpl implements UserService {
+
     private final UserRepository userRepository;
     private final UserMapper userMapper;
-//    private final ModelMapper modelMapper;
 
-    @Autowired
     public UserServiceImpl(UserRepository userRepository, UserMapper userMapper) {
         this.userRepository = userRepository;
         this.userMapper = userMapper;
     }
 
-//    @Override
-//    public List<UserDTO> listAllUsers() {
-//        List<UserDTO> result=new ArrayList<>();
-//        List<User> users= userRepository.findAll();
-//        for (User entityUser:users){
-//            UserDTO userDTO= modelMapper.map(entityUser,UserDTO.class);
-//            result.add(userDTO);
-//        }
-//        return result;
-//}
-
     @Override
     public List<UserDTO> listAllUsers() {
-     // Select only not deleted user to show "Select * from USERS where is_deleted=false"
-//       return userRepository.findAll(Sort.by("firstName")).stream().filter(eachUserEntity-> !eachUserEntity.getIsDeleted())
-//        .map(userMapper::convertToUserDTO).collect(Collectors.toList());
 
-        // After adding @Where on top of User Entity class, it will auto concat with Query
-        // e.g. in  UserRepository interface method 'User findByUserNameLike(String userName)' will
-        // help us return User Entity by doing "SELECT * FROM USERS". However, after adding the @Where(clause="is_delete=false")
-        // it will run like   "SELECT * FROM USERS WHERE is_delete=false"
-        return userRepository.findAll(Sort.by("firstName")).stream()
-                .map(userMapper::convertToUserDTO).collect(Collectors.toList());
+        List<User> userList = userRepository.findAll(Sort.by("firstName"));
+        return userList.stream().map(userMapper::convertToDTO).collect(Collectors.toList());
+
     }
+
     @Override
     public UserDTO findByUserName(String username) {
-        return userMapper.convertToUserDTO(userRepository.findByUserName(username));
+        User user = userRepository.findByUserName(username);
+        return userMapper.convertToDTO(user);
     }
 
     @Override
     public void save(UserDTO dto) {
-      userRepository.save(userMapper.convertToEntity(dto));
+
+        userRepository.save(userMapper.convertToEntity(dto));
     }
 
     @Override
     public UserDTO update(UserDTO dto) {
-        // find current user
-        User user=userRepository.findByUserName(dto.getUserName());
 
-        User userWithNoID=userMapper.convertToEntity(dto);
-        userWithNoID.setId(user.getId());
-        userRepository.save(userWithNoID);
+       //Find current user
+        User user = userRepository.findByUserName(dto.getUserName());
+        //Map updated user dto to entity object
+        User convertedUser = userMapper.convertToEntity(dto);
+        //set id to converted object
+        convertedUser.setId(user.getId());
+        //save updated user
+        userRepository.save(convertedUser);
+
         return findByUserName(dto.getUserName());
     }
 
-//    @Override
-//    public UserDTO update(UserDTO dto) {
-//      // first save dto object to entity
-//        User user=userMapper.convertToEntity(dto);
-//        Long id;
-//        if(user.getId()==null){
-//             id=userRepository.findByUserNameLike(user.getUserName()).getId();
-//             user.setId(id);
-//        }
-//        userRepository.save(user);
-//        return findByUserName(dto.getUserName());
-//
-//    }
+    @Override
+    public void deleteByUserName(String username) {
+        userRepository.deleteByUserName(username);
+
+    }
 
     @Override
     public void delete(String username) {
-        // Will not delete User from User table, instead make is_Delete=true, and save, then listAllUsers will fetch Users whose is_delete=false, making deleted user not visible from view.
-        User user= userRepository.findByUserName(username);
+        User user = userRepository.findByUserName(username);
         user.setIsDeleted(true);
         userRepository.save(user);
     }
 
     @Override
-    public void deepDelete(String userName) {
-        // will delete user from db
-        userRepository.deleteUserByUserName(userName);
-    }
+    public List<UserDTO> listAllByRole(String role) {
 
-//    @Override
-//    public List<UserDTO> listAllManagers() {
-//        // get entity
-//        List<User> user=userRepository.fetchManagers();
-//        // convert to DTO
-//        return user.stream().map(userMapper::convertToUserDTO).collect(Collectors.toList());
-//    }
+        List<User> users = userRepository.findAllByRoleDescriptionIgnoreCase(role);
 
-    @Override
-    public List<UserDTO> listAllByRole(String description) {
-        List<User> users = userRepository.findAllByRoleDescriptionIgnoreCase(description);
-
-        return users.stream().map(userMapper::convertToUserDTO).collect(Collectors.toList());
+        return users.stream().map(userMapper::convertToDTO).collect(Collectors.toList());
     }
 }

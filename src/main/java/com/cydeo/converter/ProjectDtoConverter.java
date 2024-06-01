@@ -11,10 +11,10 @@ import org.springframework.stereotype.Component;
 @ConfigurationPropertiesBinding
 public class ProjectDtoConverter implements Converter<String, ProjectDTO> {
 
+
     ProjectService projectService;
 
-    //injection
-    public ProjectDtoConverter(@Lazy  ProjectService projectService) {
+    public ProjectDtoConverter(@Lazy ProjectService projectService) {
         this.projectService = projectService;
     }
 
@@ -25,7 +25,7 @@ public class ProjectDtoConverter implements Converter<String, ProjectDTO> {
             return null;
         }
 
-        return projectService.findByProjectCode(source);
+        return projectService.getByProjectCode(source);
 
     }
 

@@ -3,16 +3,11 @@ package com.cydeo.controller;
 import com.cydeo.dto.UserDTO;
 import com.cydeo.service.RoleService;
 import com.cydeo.service.UserService;
-import jdk.jfr.Threshold;
-import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.stereotype.Controller;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
-//@Transactional
 @Controller
 @RequestMapping("/user")
 public class UserController {
@@ -37,9 +32,7 @@ public class UserController {
 
 
     @PostMapping("/create")
-    public String insertUser(
-//            @Valid
-                                 @ModelAttribute("user") UserDTO user, BindingResult bindingResult, Model model) {
+    public String insertUser(@ModelAttribute("user") UserDTO user, BindingResult bindingResult, Model model) {
 
         if (bindingResult.hasErrors()) {
 
@@ -55,10 +48,10 @@ public class UserController {
 
     }
 
-    @GetMapping("/update/{userName}")
-    public String editUser(@PathVariable("userName") String userName, Model model) {
+    @GetMapping("/update/{username}")
+    public String editUser(@PathVariable("username") String username, Model model) {
 
-        model.addAttribute("user", userService.findByUserName(userName));
+        model.addAttribute("user", userService.findByUserName(username));
         model.addAttribute("roles", roleService.listAllRoles());
         model.addAttribute("users", userService.listAllUsers());
 
@@ -85,7 +78,8 @@ public class UserController {
 
     @GetMapping("/delete/{username}")
     public String deleteUser(@PathVariable("username") String username) {
-        userService.delete(username); // keep in db
+//        userService.deleteByUserName(username);
+        userService.delete(username);
         return "redirect:/user/create";
     }
 
